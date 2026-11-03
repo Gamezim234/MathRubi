@@ -7,9 +7,6 @@ const types = {'.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/web
 const { generatePractice } = require('./practice-api');
 const { createAccountApi } = require('./account-api');
 const accounts = createAccountApi(process.env.MATHRUBI_DB || path.join(__dirname, '..', 'data', 'accounts.sqlite'));
-if (process.env.MATHRUBI_OWNER_EMAIL && process.env.MATHRUBI_OWNER_INVITE) {
-  accounts.reserve('rubifofa', process.env.MATHRUBI_OWNER_EMAIL, process.env.MATHRUBI_OWNER_INVITE);
-}
 http.createServer((req, res) => {
   if (req.url.startsWith('/api/account/')) {
     accounts.handle(req, res).catch(() => {

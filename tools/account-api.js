@@ -23,14 +23,8 @@ function createAccountApi(databasePath) {
   `);
   const account = name => db.prepare('SELECT * FROM accounts WHERE name = ?').get(name);
 
-  function reserve(name, email, invite) {
-    if (!/^[a-z0-9_]{3,24}$/.test(name) || !email || !invite || invite.length < 24) throw Error('Reserva inválida.');
-    const progress = emptyProgress();
-    progress.phases['limites:0:0'] = 0;
-    progress.phases['limites:0:1'] = 0;
-    db.prepare('INSERT OR IGNORE INTO accounts (name,email,invite,progress) VALUES (?,?,?,?)')
-      .run(name, email.toLowerCase(), digest(invite), JSON.stringify(progress));
-  }
+  // Remove a reserva antiga sem tocar em contas que já vincularam um autenticador.
+  db.prepare('DELETE FROM accounts WHERE name = ? AND secret IS NULL AND invite IS NOT NULL').run('rubifofa');
 
   function authenticate(secret, code, last) {
     if (!/^[A-Z2-7]{32}$/.test(secret || '') || !/^\d{6}$/.test(code || '')) return -1;
@@ -112,7 +106,6 @@ function createAccountApi(databasePath) {
     if (action === 'lookup') return reply(200, {exists: Boolean(user?.secret), reserved: Boolean(user?.invite)});
     if (action === 'register') {
       if (user?.secret) return reply(409, {error: 'Esse usuário já existe.'});
-      if (name === 'rubifofa' && !user?.invite) return reply(403, {error: 'A conta reservada ainda aguarda configuração.'});
       if (typeof email !== 'string' || email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return reply(400, {error: 'E-mail inválido.'});
       if (user?.invite && (email.toLowerCase() !== user.email || typeof invite !== 'string' ||
           !timingSafeEqual(Buffer.from(digest(invite)), Buffer.from(user.invite)))) {
@@ -136,7 +129,7 @@ function createAccountApi(databasePath) {
     issueSession(name, res, secure);
     return reply(200, {user: name, progress: JSON.parse(account(name).progress)});
   }
-  return {handle, reserve};
+  return {handle};
 }
 
 module.exports = {createAccountApi};

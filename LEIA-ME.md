@@ -93,5 +93,3 @@ A rota `POST /api/practice` encaminha a chamada à NVIDIA. O pacote da Discloud 
 Com o servidor ativo, o login usa o autenticador e uma sessão HTTP-only. O progresso fica no SQLite e é carregado ao entrar na mesma conta em outro navegador. A abertura direta do HTML mantém o modo local. Contas locais anteriores precisam cadastrar um autenticador no servidor. A recuperação de conta na versão sincronizada ainda precisa ser implementada.
 
 Configure `MATHRUBI_DB` apontando para um volume persistente com backup. O padrão local é `data/accounts.sqlite`. Preserve o banco entre publicações. Sem armazenamento persistente, recriar a instância pode apagar as contas.
-
-Para reservar `rubifofa`, configure no servidor `MATHRUBI_OWNER_EMAIL` e `MATHRUBI_OWNER_INVITE` com um código aleatório privado de pelo menos 24 caracteres. No primeiro login, a pessoa confirma o e-mail, informa o código e vincula o autenticador. O código vale uma vez. A reserva já coloca as duas primeiras fases de Limites como concluídas, deixando **O ponto alvo pode enganar** como próxima fase. Não inclua dados de ativação no Git ou no ZIP público.
