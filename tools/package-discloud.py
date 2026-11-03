@@ -25,20 +25,20 @@ with zipfile.ZipFile(output, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
     archive.writestr('discloud.config', config)
     archive.write(root / 'package.json', 'package.json')
     for file in files:
-        archive.write(file, file.relative_to(root).as_posix())
+        archive.write(file, 'public/' + file.relative_to(public).as_posix())
     for name in ('tools/serve.js', 'tools/practice-api.js', 'tools/account-api.js'):
         archive.write(root / name, name)
 with zipfile.ZipFile(output) as archive:
     assert archive.testzip() is None
     names = set(archive.namelist())
-    assert {'dist/index.html', 'discloud.config', 'tools/serve.js', 'tools/practice-api.js'} <= names
+    assert {'public/index.html', 'discloud.config', 'tools/serve.js', 'tools/practice-api.js'} <= names
     assert not any(n.startswith(('arquivo/', '.git/')) or '__visual' in n for n in names)
-    html = archive.read('dist/index.html').decode('utf-8-sig')
+    html = archive.read('public/index.html').decode('utf-8-sig')
     for asset in re.findall(r'(?:src|href)="([^"#]+)"', html):
         if asset.startswith(('http:', 'https:', '/', 'data:', './')):
             continue
         target = asset.split('?')[0].split('#')[0]
-        if target and 'dist/' + target not in names:
+        if target and 'public/' + target not in names:
             raise SystemExit('Recurso ausente do ZIP: ' + target)
 print(str(output))
 print(str(len(files)) + ' arquivos públicos + discloud.config; ZIP íntegro e referências verificadas.')

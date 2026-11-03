@@ -1,6 +1,8 @@
 // Servidor estático mínimo só para desenvolvimento: node tools/serve.js
 const http = require('http'), fs = require('fs'), path = require('path');
-const root = path.join(__dirname, '..', 'dist');
+const source = path.join(__dirname, '..', 'dist');
+const packaged = path.join(__dirname, '..', 'public');
+const root = fs.existsSync(path.join(packaged, 'index.html')) ? packaged : source;
 const types = {'.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8'};
 const { generatePractice } = require('./practice-api');
 const { createAccountApi } = require('./account-api');
