@@ -86,4 +86,12 @@ Abra o app com `node tools/serve.js` em http://localhost:5183. Em **Configuraç�
 
 Em **Praticar**, escolha o curso. O app usa os nomes de seção, unidade e fase para limitar a geração às fases já concluídas. A NVIDIA recebe esses tópicos e o nome do curso, além da chave usada para autenticar a chamada. As questões geradas são extras e não alteram a progressão da trilha. A revisão espaçada continua disponível.
 
-A rota `POST /api/practice` é implementada em `tools/practice-api.js` e encaminha a chamada à NVIDIA com o modelo `meta/llama-3.3-70b-instruct`. A geração exige Node.js 20+ e um servidor que execute `tools/serve.js`. Para hospedar o servidor, defina `HOST=0.0.0.0`, configure `PORT` conforme a plataforma e exponha o app por HTTPS. O pacote estático atual da Discloud não inclui essa rota. Sem ela, a prática gerada não funciona.
+A rota `POST /api/practice` encaminha a chamada à NVIDIA. O pacote da Discloud inclui o servidor Node.js, com host `0.0.0.0` e porta `8080`. Use Node.js 22.13 ou mais recente.
+
+## Conta e progresso sincronizados
+
+Com o servidor ativo, o login usa o autenticador e uma sessão HTTP-only. O progresso fica no SQLite e é carregado ao entrar na mesma conta em outro navegador. A abertura direta do HTML mantém o modo local. Contas locais anteriores precisam cadastrar um autenticador no servidor. A recuperação de conta na versão sincronizada ainda precisa ser implementada.
+
+Configure `MATHRUBI_DB` apontando para um volume persistente com backup. O padrão local é `data/accounts.sqlite`. Preserve o banco entre publicações. Sem armazenamento persistente, recriar a instância pode apagar as contas.
+
+Para reservar `rubifofa`, configure no servidor `MATHRUBI_OWNER_EMAIL` e `MATHRUBI_OWNER_INVITE` com um código aleatório privado de pelo menos 24 caracteres. No primeiro login, a pessoa confirma o e-mail, informa o código e vincula o autenticador. O código vale uma vez. A reserva já coloca as duas primeiras fases de Limites como concluídas, deixando **O ponto alvo pode enganar** como próxima fase. Não inclua dados de ativação no Git ou no ZIP público.

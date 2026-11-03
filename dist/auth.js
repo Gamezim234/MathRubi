@@ -67,15 +67,22 @@ const AUTH = (() => {
   }
 
   function start(name) {
-    write(SESSION, name);
+    if (!api.cloud) write(SESSION, name);
     api.user = name;
     $gate.remove();
     $main.hidden = false;
     const chip = el('span', {className: 'tag', textContent: '@' + name, title: accounts()[name]?.email || ''});
-    const out = el('button', {textContent: 'Sair', onclick: () => { try { localStorage.removeItem(SESSION); } catch {} location.reload(); }});
+    const out = el('button', {textContent: 'Sair', onclick: async () => {
+      if (api.cloud) {
+        try { await accountRequest('logout', {}); }
+        catch { out.textContent = 'Tente sair novamente'; return; }
+      }
+      try { localStorage.removeItem(SESSION); } catch {}
+      location.reload();
+    }});
     out.style.padding = '6px 12px';
     document.querySelector('header').append(el('span', {}, chip, ' ', out));
-    document.body.append(el('script', {src: 'lab.js?v=16'}));
+    document.body.append(el('script', {src: 'lab.js?v=17'}));
   }
 
   // ---- telas do portão
@@ -111,6 +118,13 @@ const AUTH = (() => {
     const [f, msg, input] = form('Nome de usuário', {placeholder: 'seu_usuario', maxLength: 20, autocapitalize: 'none', spellcheck: false}, 'Continuar →', value => {
       const name = value.trim().toLowerCase();
       if (!/^[a-z0-9_]{3,20}$/.test(name)) return 'Use de 3 a 20 letras minúsculas, números ou _ (sem espaços).';
+      if (api.cloud) {
+        return accountRequest('lookup', {name}).then(result => {
+          if (result.exists) askCode(name);
+          else if (result.reserved) askEmail(name, true);
+          else offerSignup(name);
+        }).catch(error => error.message);
+      }
       if (accounts()[name]) askCode(name); else offerSignup(name);
     });
     screen('ENTRAR', 'Quem está estudando?', 'Digite seu nome de usuário. Em seguida pediremos o código do seu app autenticador. Não existe senha.', f, msg);
@@ -125,24 +139,42 @@ const AUTH = (() => {
   }
 
   // O e-mail só identifica a conta: fica guardado neste navegador e nada é enviado.
-  function askEmail(name) {
+  function askEmail(name, reserved = false) {
     const [f, msg, input] = form('E-mail', {type: 'email', placeholder: 'voce@exemplo.com', maxLength: 100, autocomplete: 'email', autocapitalize: 'none', spellcheck: false}, 'Continuar →', value => {
       const email = value.trim().toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return 'Digite um e-mail válido, como voce@exemplo.com.';
-      setup(name, email);
+      if (!reserved) setup(name, email);
+      else {
+        const [activation, notice, field] = form('Código de ativação', {type:'password', maxLength: 100}, 'Continuar →', invite => {
+          setup(name, email, false, invite.trim());
+        });
+        screen('ATIVAÇÃO', 'Ative @' + name, 'Use o código de ativação privado da conta.', activation, notice,
+          el('button', {textContent: '← Cancelar', onclick: askUser}));
+        field.focus();
+      }
     });
-    screen('NOVA CONTA', 'Qual é o seu e-mail?', 'Ele identifica a conta @' + name + ' e fica guardado só neste navegador. Não enviamos nenhuma mensagem. Para recuperar o acesso, você vai usar o e-mail junto com um código de recuperação.', f, msg,
+    screen('NOVA CONTA', 'Qual é o seu e-mail?', api.cloud
+      ? 'O servidor usa o e-mail para identificar a conta. O MathRubi não envia mensagens.'
+      : 'Ele identifica a conta @' + name + ' e fica guardado só neste navegador. Não enviamos nenhuma mensagem. Para recuperar o acesso, você vai usar o e-mail junto com um código de recuperação.', f, msg,
       el('button', {textContent: '← Cancelar', onclick: askUser}));
     input.focus();
   }
 
   // relink = true: a conta já existe e só troca o autenticador (depois de usar um código de recuperação).
-  function setup(name, email, relink = false) {
+  function setup(name, email, relink = false, invite = '') {
     const secret = newSecret();
     const grouped = secret.match(/.{1,4}/g).join(' ');
     const [f, msg, input] = form('Código de 6 dígitos', {inputMode: 'numeric', pattern: '[0-9 ]*', maxLength: 7, placeholder: '000000'}, 'Confirmar', async value => {
       const code = value.replace(/\s/g, '');
       if (!/^\d{6}$/.test(code)) return 'O código tem 6 dígitos.';
+      if (api.cloud) {
+        try {
+          const result = await accountRequest('register', {name, email, invite, secret, code});
+          api.progress = result.progress;
+          start(name);
+        } catch (error) { return error.message; }
+        return;
+      }
       const counter = await check(secret, code);
       if (counter < 0) return 'Código incorreto. Confira a chave no app e o horário do aparelho.';
       const all = accounts();
@@ -221,6 +253,14 @@ const AUTH = (() => {
 
   function askCode(name) {
     const [f, msg, input] = form('Código de 6 dígitos', {inputMode: 'numeric', pattern: '[0-9 ]*', maxLength: 7, placeholder: '000000', autocomplete: 'one-time-code'}, 'Entrar', async value => {
+      if (api.cloud) {
+        try {
+          const result = await accountRequest('login', {name, code: value.replace(/\s/g, '')});
+          api.progress = result.progress;
+          start(name);
+        } catch (error) { return error.message; }
+        return;
+      }
       const all = accounts(), acc = all[name];
       if (!acc) return 'Conta não encontrada.';
       const wait = Math.ceil((acc.until - Date.now()) / 1000);
@@ -240,12 +280,37 @@ const AUTH = (() => {
     });
     screen('VERIFICAÇÃO', 'Olá, @' + name, 'Abra o app autenticador e digite o código de 6 dígitos do MathRubi.', f, msg,
       el('div', {className: 'actions'},
-        el('button', {textContent: 'Perdi o autenticador', onclick: () => askRecovery(name)}),
+        ...(api.cloud ? [] : [el('button', {textContent: 'Perdi o autenticador', onclick: () => askRecovery(name)})]),
         el('button', {textContent: '← Não sou @' + name, onclick: askUser})));
     input.focus();
   }
 
-  const api = {user: null};
+  async function accountRequest(action, body) {
+    const response = await fetch('/api/account/' + action, body === undefined ? {cache:'no-store'} : {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+    if (action === 'session' && (response.status === 404 || !response.headers.get('content-type')?.includes('application/json'))) return null;
+    const result = await response.json();
+    if (!response.ok) throw Error(result.error || 'A conta está indisponível agora.');
+    return result;
+  }
+  const api = {user: null, cloud: false, progress: null, sync: progress => accountRequest('progress', {progress})};
+  const localLogin = () => {
+    const remembered = read(SESSION);
+    if (typeof remembered === 'string' && accounts()[remembered]) start(remembered); else askUser();
+  };
+  async function connect() {
+    try {
+      const result = await accountRequest('session');
+      if (!result) return localLogin();
+      api.cloud = true;
+      api.progress = result.progress;
+      if (result.user) start(result.user); else askUser();
+    } catch {
+      screen('CONEXÃO', 'Conta indisponível', 'Não foi possível conectar ao servidor.',
+        el('button', {textContent:'Tentar novamente', onclick:connect}));
+    }
+  }
   if (!(window.crypto && crypto.subtle)) {
     $main.hidden = true;
     document.body.insertBefore($gate, $main);
@@ -253,8 +318,8 @@ const AUTH = (() => {
   } else {
     $main.hidden = true;
     document.body.insertBefore($gate, $main);
-    const remembered = read(SESSION);
-    if (typeof remembered === 'string' && accounts()[remembered]) start(remembered); else askUser();
+    if (location.protocol === 'file:') localLogin();
+    else connect();
   }
   return api;
 })();

@@ -4,12 +4,47 @@ const $ = id => document.getElementById(id);
 const key = 'mathrubi-v2:' + AUTH.user; // um progresso por usuário (ver auth.js)
 const GOLD = 0.9; // coroa: acertar de primeira pelo menos 90% dos exercícios. Não há nota mínima para concluir.
 
-let state = {phases: {}, misses: {}};
-try {
+let state = AUTH.progress || {phases: {}, misses: {}};
+if (!AUTH.cloud) try {
   const saved = JSON.parse(localStorage.getItem(key));
   if (saved && saved.phases && saved.misses) state = saved;
 } catch {}
-const save = () => { try { localStorage.setItem(key, JSON.stringify(state)); } catch {} };
+let syncPending = false;
+let syncing = false;
+const syncNotice = document.createElement('p');
+syncNotice.setAttribute('role', 'status');
+syncNotice.hidden = true;
+$('map').before(syncNotice);
+
+async function flushProgress() {
+  if (!syncPending || syncing) return;
+  syncing = true;
+  syncPending = false;
+  try {
+    const {progress} = await AUTH.sync(state);
+    for (const group of ['phases', 'misses']) {
+      for (const [id, score] of Object.entries(progress[group])) {
+        state[group][id] = Math.max(state[group][id] || 0, score);
+      }
+    }
+    syncNotice.hidden = true;
+  } catch {
+    syncPending = true;
+    syncNotice.hidden = false;
+    syncNotice.textContent = 'Progresso aguardando sincronização. Mantenha esta aba aberta.';
+  } finally {
+    syncing = false;
+    if (syncPending) setTimeout(flushProgress, syncNotice.hidden ? 0 : 5000);
+  }
+}
+function save() {
+  if (AUTH.cloud) {
+    syncPending = true;
+    void flushProgress();
+  } else {
+    try { localStorage.setItem(key, JSON.stringify(state)); } catch {}
+  }
+}
 
 const sections = buildPath();
 const units = Object.values(SUBJECTS).flatMap(subject => subject.sections.flatMap(section => section.refs.map(([id,u]) => sections.find(s => s.id === id).units[u])));

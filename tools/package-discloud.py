@@ -1,4 +1,4 @@
-"""Cria o ZIP estático para Discloud: python tools/package-discloud.py --subdomain mathrubi."""
+"""Cria o ZIP do MathRubi para Discloud: python tools/package-discloud.py --subdomain mathrubi."""
 from pathlib import Path
 import argparse
 import re
@@ -18,23 +18,26 @@ files = sorted(p for p in public.rglob('*') if p.is_file() and not p.is_symlink(
 if not (public / 'index.html').is_file():
     raise SystemExit('dist/index.html ausente.')
 config = '\n'.join(['NAME=MathRubi', 'TYPE=site', 'ID=' + args.subdomain,
-                    'MAIN=index.html', 'RAM=512', 'VERSION=latest', 'AUTORESTART=true', ''])
+                    'MAIN=tools/serve.js', 'START=env HOST=0.0.0.0 PORT=8080 node tools/serve.js',
+                    'RAM=512', 'VERSION=latest', 'AUTORESTART=true', ''])
 output.parent.mkdir(parents=True, exist_ok=True)
 with zipfile.ZipFile(output, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
     archive.writestr('discloud.config', config)
     for file in files:
-        archive.write(file, file.relative_to(public).as_posix())
+        archive.write(file, file.relative_to(root).as_posix())
+    for name in ('tools/serve.js', 'tools/practice-api.js', 'tools/account-api.js'):
+        archive.write(root / name, name)
 with zipfile.ZipFile(output) as archive:
     assert archive.testzip() is None
     names = set(archive.namelist())
-    assert 'index.html' in names and 'discloud.config' in names
-    assert not any(n.startswith(('dist/', 'arquivo/', '.git/')) or '__visual' in n for n in names)
-    html = archive.read('index.html').decode('utf-8-sig')
+    assert {'dist/index.html', 'discloud.config', 'tools/serve.js', 'tools/practice-api.js'} <= names
+    assert not any(n.startswith(('arquivo/', '.git/')) or '__visual' in n for n in names)
+    html = archive.read('dist/index.html').decode('utf-8-sig')
     for asset in re.findall(r'(?:src|href)="([^"#]+)"', html):
         if asset.startswith(('http:', 'https:', '/', 'data:', './')):
             continue
         target = asset.split('?')[0].split('#')[0]
-        if target and target not in names:
+        if target and 'dist/' + target not in names:
             raise SystemExit('Recurso ausente do ZIP: ' + target)
 print(str(output))
 print(str(len(files)) + ' arquivos públicos + discloud.config; ZIP íntegro e referências verificadas.')
