@@ -1,0 +1,15 @@
+# Generated packages, previews and local dependencies
+output/
+node_modules/
+__pycache__/
+dist/__*
+*.log
+
+# Machine-specific settings and secrets
+.claude/
+.env
+.env.*
+!.env.example
+
+# Locally downloaded study materials
+Conteúdos/

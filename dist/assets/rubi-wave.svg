@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Rubi, seu companheiro de cálculo, acenando</title>
+  <ellipse cx="118" cy="244" rx="73" ry="10" fill="#E9E3F5"/>
+  <path d="M76 202v25c0 11 9 16 20 16h12v-35M132 208v35h13c11 0 20-5 20-16v-25" fill="#8350CF"/>
+  <path d="M76 222h32v13H89c-8 0-13-4-13-13M132 222h33c0 9-5 13-13 13h-20" fill="#A470F0"/>
+  <path d="M68 151c-18 0-35 15-35 35v10c0 9 6 15 14 15s14-6 14-15v-8c0-7 4-12 11-12" fill="#A470F0"/>
+  <path d="m164 147 16-12c8-6 13-18 13-32V82c0-8 6-14 13-14s13 6 13 14v25c0 23-10 44-29 56l-16 10" fill="#A470F0"/>
+  <path d="M193 94V79c0-8 5-13 12-13 8 0 14 6 14 14v13" fill="#B98BFF"/>
+  <path d="m194 74-5-10c-3-6-1-11 3-13 5-2 9 0 12 6l5 12" fill="#B98BFF"/>
+  <rect x="64" y="137" width="111" height="83" rx="33" fill="#A470F0"/>
+  <path d="M65 184c8 18 28 25 55 25s46-8 54-25v10c0 17-14 26-33 26H98c-20 0-33-10-33-28z" fill="#8956D3"/>
+  <rect x="91" y="161" width="58" height="35" rx="15" fill="#C7A3FF"/>
+  <path d="m122 169-13 13h10l-2 10 14-15h-11z" fill="#FFF"/>
+  <path d="M120 50V28" stroke="#A470F0" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="120" cy="22" r="12" fill="#FFB64D"/>
+  <circle cx="116" cy="18" r="4" fill="#FFDB96"/>
+  <rect x="35" y="84" width="20" height="36" rx="9" fill="#8956D3"/>
+  <rect x="185" y="84" width="20" height="36" rx="9" fill="#8956D3"/>
+  <rect x="48" y="45" width="144" height="112" rx="39" fill="#A470F0"/>
+  <path d="M53 115c9 22 31 30 67 30s58-8 67-30v8c0 22-16 34-39 34H91c-23 0-38-13-38-34z" fill="#8956D3"/>
+  <rect x="63" y="63" width="114" height="77" rx="27" fill="#24333E"/>
+  <ellipse cx="96" cy="95" rx="16" ry="20" fill="#FFF"/>
+  <ellipse cx="145" cy="95" rx="16" ry="20" fill="#FFF"/>
+  <ellipse cx="100" cy="98" rx="9" ry="13" fill="#78D92C"/>
+  <ellipse cx="141" cy="98" rx="9" ry="13" fill="#78D92C"/>
+  <ellipse cx="102" cy="100" rx="4" ry="7" fill="#24333E"/>
+  <ellipse cx="139" cy="100" rx="4" ry="7" fill="#24333E"/>
+  <circle cx="99" cy="94" r="3" fill="#FFF"/>
+  <circle cx="136" cy="94" r="3" fill="#FFF"/>
+  <path d="M108 119c7 8 18 8 25 0" stroke="#8FE449" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="77" cy="116" rx="7" ry="4" fill="#FF93B1" opacity=".75"/>
+  <ellipse cx="164" cy="116" rx="7" ry="4" fill="#FF93B1" opacity=".75"/>
+  <path d="m37 42 3-9 3 9 9 3-9 3-3 9-3-9-9-3zM211 139l3-7 2 7 7 2-7 3-2 7-3-7-7-3z" fill="#FFCB62"/>
+</svg>

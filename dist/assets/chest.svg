@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 150" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Baú de conquista dourado</title>
+  <ellipse cx="80" cy="133" rx="58" ry="9" fill="#EDE8D9"/>
+  <path d="M25 69h110v43c0 12-8 19-20 19H45c-12 0-20-7-20-19z" fill="#E6A01B"/>
+  <path d="M25 95h110v17c0 12-8 19-20 19H45c-12 0-20-7-20-19z" fill="#D38615"/>
+  <path d="M24 63c0-23 17-37 38-37h36c21 0 38 14 38 37v15H24z" fill="#FFCB43"/>
+  <path d="M37 59c2-12 11-21 25-21h36c14 0 23 9 25 21" stroke="#FFDF78" stroke-width="8" stroke-linecap="round"/>
+  <path d="M49 28h13v103H49zM98 28h13v103H98z" fill="#FFE07B"/>
+  <path d="M24 68h112v15H24z" fill="#F7B329"/>
+  <rect x="63" y="66" width="34" height="35" rx="9" fill="#FFF0AE"/>
+  <path d="M85 81a5 5 0 1 0-8 4v7h6v-7a5 5 0 0 0 2-4" fill="#C27A15"/>
+  <path d="m130 18 3-10 4 10 10 4-10 3-4 10-3-10-10-3zM20 40l3-7 2 7 8 3-8 2-2 8-3-8-7-2z" fill="#FFCB43"/>
+</svg>

@@ -1,0 +1,75 @@
+:root{--ink:#131f25;--panel:#202f36;--lime:#58e6bd;--muted:#bed0d5}
+body{background:var(--ink)}header{max-width:800px;border-color:#344952}main{display:block;max-width:760px;padding-top:24px}
+h1{letter-spacing:-.055em}button{background:#263942;border-color:#42606a}.map-head{padding:20px 8px 10px}.map-head p{margin:12px 0 18px}
+#track{gap:28px}.unit{--accent:#11c99f;--edge:#07886b;border-top:1px solid #354a54;padding-top:20px}.unit:nth-child(3n+2){--accent:#91c9ff;--edge:#3d76a6}.unit:nth-child(3n){--accent:#c8adff;--edge:#7861ad}
+.unit-head{background:#223941;border:1px solid #395862;border-radius:17px;padding:15px 18px}.unit-head h2{margin:5px 0}.unit-head p{margin:0}.unit-head .tag{color:var(--accent)}
+.trail{position:relative;display:grid;justify-items:center;gap:16px;padding:20px 0 4px}.trail::before{content:'';position:absolute;top:22px;bottom:30px;left:50%;border-left:3px dashed #384d56}
+.phase{position:relative;display:grid;justify-items:center;gap:9px;transform:translateX(var(--shift));text-align:center;font-size:.82rem;font-weight:750;color:var(--muted)}.phase:nth-child(1){--shift:-52px}.phase:nth-child(2){--shift:4px}.phase:nth-child(3){--shift:50px}.phase:nth-child(4){--shift:0px}
+nav .node{display:grid;place-items:center;text-align:center;width:68px;height:58px;padding:0;border-radius:50%;font-size:26px;background:var(--accent);color:#10232a;border:2px solid #ffffff55;box-shadow:0 6px 0 var(--edge);text-shadow:0 1px #ffffff66}
+nav .node:disabled{opacity:1;background:#30434c;color:#a4b7bf;border-color:#4c626c;box-shadow:0 6px 0 #0a1419}
+nav .node[aria-current=true]{color:#10232a;outline:3px solid var(--accent);outline-offset:5px;border-color:#fff}
+nav .chest:not(:disabled){background:#ffc957;box-shadow:0 6px 0 #9f5d1d}
+#back{margin:0 14px 14px 0}#play{max-width:670px;margin:auto}.formula,input{background:#152329}
+@media(max-width:460px){header,main{padding-inline:14px}.phase:nth-child(1){--shift:-35px}.phase:nth-child(3){--shift:35px}}
+#coachBadge{display:none}.board-mode #coachLine{display:flex;align-items:center;gap:12px;margin-bottom:20px}.board-mode #coachBadge{display:grid;place-items:center;flex:0 0 44px;height:44px;border-radius:14px;background:#ffad78;color:#282026;font:bold 24px system-ui}.board-mode #prompt{margin:0;border:1px solid #526a73;border-radius:12px;padding:10px 14px;color:#edf5f4}
+#board{min-height:205px;padding:clamp(14px,4vw,28px);border-radius:18px;border:2px solid #405962;background:repeating-conic-gradient(#192a30 0 25%,#23383f 0 50%) 0/64px 64px;text-align:center}
+.board-formula,#board p{width:fit-content;max-width:100%;margin:0 auto 12px;padding:7px 12px;border-radius:8px;background:#122127;color:#effaf7;font-weight:750}
+.number-line{display:flex;align-items:center;gap:10px;padding:18px 0}.number-line input{width:0;margin:0;min-height:42px;padding:0;accent-color:#58e6bd;cursor:grab}.target-flag{color:#ffd775;background:#122127;padding:8px;border-radius:8px;white-space:nowrap}
+.factor-fraction{max-width:340px;margin:0 auto 16px}.factor-row{display:flex;justify-content:center;gap:8px;padding:8px}.factor-row:first-child{border-bottom:3px solid #c5dbde}.factor-piece{background:#284c56;font-family:monospace}.factor-piece[aria-pressed=true]{border-color:#58e6bd;background:#31695e}.factor-piece.cancelled{opacity:.65}.cancel-tray{border:2px dashed #58e6bd;background:#172d33;margin-bottom:12px}
+
+:root{--ink:#131f24;--panel:#131f24;--lime:#58cc02;--muted:#b6c8d1}
+body{font-family:ui-rounded,"Segoe UI",system-ui,sans-serif}
+header{position:sticky;top:0;z-index:3;background:var(--ink);max-width:none;padding-inline:max(18px,calc((100% - 690px)/2))}
+.brand{color:#8ee849;letter-spacing:0;font-size:1.28rem}
+.map-head h1{font-size:clamp(38px,8vw,60px)}
+.unit{--accent:#58cc02;--edge:#387f00;border:0;padding:0}
+.unit:nth-child(3n+2){--accent:#1cb0f6;--edge:#087eb5}
+.unit:nth-child(3n){--accent:#ce82ff;--edge:#9349c4}
+.unit-head{background:var(--edge);border:0;border-radius:16px;box-shadow:0 4px 0 #0004;padding:18px 20px}
+.unit-head .tag,.unit-head p{color:#fff}
+.trail{gap:19px;padding:26px 0}
+.trail::before{display:none}
+.phase{--shift:0px}
+.phase:nth-child(5){--shift:-50px}
+.phase:nth-child(6){--shift:-15px}
+nav .node{width:74px;height:61px;border:0;color:white;box-shadow:0 7px 0 var(--edge);text-shadow:0 2px #0004}
+nav .node[aria-current=true]{color:white;outline:3px solid #53656e;outline-offset:6px}
+nav .node[aria-current=true]::before{content:"COMEÇAR";position:absolute;bottom:calc(100% + 10px);background:#223239;border:2px solid #52636c;border-radius:10px;padding:7px 10px;color:#9bec60;font-size:.73rem;letter-spacing:.08em;text-shadow:none;z-index:2}
+.trail .phase:has([aria-current=true]){margin-top:30px}
+.primary{box-shadow:0 4px 0 #387f00;font-weight:850}
+button:focus-visible,input:focus-visible{outline:3px solid #1cb0f6;outline-offset:4px}
+#play{border:0;box-shadow:none;padding:clamp(0px,3vw,24px)}
+#title{font-size:clamp(25px,5vw,36px);line-height:1.15;margin:0 0 16px}
+#coachLine{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+#coachBadge{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:16px;background:#a970ef;color:white;font-weight:950;font-size:26px;box-shadow:0 4px #6e3ab3}
+#prompt{margin:0;padding:10px 14px;border:2px solid #374b55;border-radius:14px;color:#f5f8fa}
+#board{background:#192930;border-color:#374b55}
+#choices button,#hint,#solution,#back{border:2px solid #374b55;box-shadow:0 3px 0 #374b55;background:#192930}
+#choices button{flex:1 1 120px}
+#feedback:not(:empty){border-radius:12px;padding:12px 15px;background:#233b26}
+#feedback[data-ok=false]{background:#48282d;color:#ffb6ba}
+#next{margin-left:auto}
+
+/* ---- Rubi, pílulas teóricas, passos guiados ---- */
+.section-head{margin:34px 0 4px;padding:0 4px}.section-head h2{font-size:clamp(30px,6vw,44px);letter-spacing:-.04em;margin:2px 0 0}.section-head .tag{color:#8ee849}
+.unit-head h3{margin:5px 0;font-size:1.35rem}
+#coachBadge svg,.rubi-face svg{width:100%;height:100%;display:block}
+#coachBadge{background:none!important;box-shadow:none!important;padding:0}
+.board-mode #coachBadge{background:none;flex:0 0 52px;height:52px}
+#coachBadge .eye,.rubi-face .eye{animation:blink 4s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+#coachBadge .eye,.rubi-face .eye{transform-box:fill-box;transform-origin:center}
+.rubi-note,#hintText:not(:empty){border-left:4px solid #a970ef;background:#1d2b33;border-radius:0 12px 12px 0;padding:10px 14px;color:#e8f1f4}
+.pill-chat{display:grid;gap:12px;text-align:left;margin-bottom:14px}
+.rubi-row{display:flex;gap:10px;align-items:flex-start;animation:pop .24s ease-out}
+.rubi-face{flex:0 0 46px;height:46px}
+.rubi-bubble{margin:0!important;background:#122127!important;border:2px solid #374b55;border-radius:6px 16px 16px 16px;padding:11px 14px!important;color:#f5f8fa;font-weight:600;line-height:1.5;width:auto!important;max-width:100%}
+.pill-next{min-width:150px}
+.pill-mode #prompt{display:none}.pill-mode #coachLine{display:none}
+.step-log{list-style:none;counter-reset:s;margin:0 0 12px;padding:0;display:grid;gap:7px;text-align:left}
+.step-log li{counter-increment:s;background:#122127;border-radius:10px;padding:8px 12px;font-family:monospace;font-size:.95rem;color:#dff7d0}
+.step-log li::before{content:counter(s) '. ';color:#8ee849}.step-log small{display:block;font:500 .82rem system-ui;color:var(--muted);margin-top:3px}
+.step-box{text-align:left}.step-ask{margin:0 0 10px;color:#fff;font-weight:700}.step-form,.step-choices{display:flex;flex-wrap:wrap;gap:8px}.step-choices button{flex:1 1 110px;background:#192930;border:2px solid #374b55;box-shadow:0 3px 0 #374b55}
+.step-tip{min-height:1.3em;color:#ffd0a2}.step-done,.order-msg{color:#8ee849;font-weight:800}
+.order-pool{display:grid;gap:8px}.order-piece{text-align:left;background:#192930;border:2px solid #374b55;box-shadow:0 3px 0 #374b55;font-family:monospace}
+#review{margin-left:0}.map-head .actions{margin-top:0}
