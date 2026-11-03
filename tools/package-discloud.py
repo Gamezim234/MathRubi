@@ -23,6 +23,7 @@ config = '\n'.join(['NAME=MathRubi', 'TYPE=site', 'ID=' + args.subdomain,
 output.parent.mkdir(parents=True, exist_ok=True)
 with zipfile.ZipFile(output, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
     archive.writestr('discloud.config', config)
+    archive.write(root / 'package.json', 'package.json')
     for file in files:
         archive.write(file, file.relative_to(root).as_posix())
     for name in ('tools/serve.js', 'tools/practice-api.js', 'tools/account-api.js'):
