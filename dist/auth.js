@@ -75,7 +75,7 @@ const AUTH = (() => {
     const out = el('button', {textContent: 'Sair', onclick: () => { try { localStorage.removeItem(SESSION); } catch {} location.reload(); }});
     out.style.padding = '6px 12px';
     document.querySelector('header').append(el('span', {}, chip, ' ', out));
-    document.body.append(el('script', {src: 'lab.js?v=15'}));
+    document.body.append(el('script', {src: 'lab.js?v=16'}));
   }
 
   // ---- telas do portão

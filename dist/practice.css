@@ -1,0 +1,44 @@
+.practice-panel h1 { margin: 0 0 20px; }
+.practice-box {
+  border: 2px solid var(--line);
+  border-radius: 20px;
+  padding: clamp(14px, 4vw, 24px);
+  margin-bottom: 16px;
+  background: var(--panel);
+}
+.practice-box h2 { margin-top: 0; }
+.practice-box label { display: block; margin-bottom: 6px; font-weight: 800; }
+.practice-box select, .practice-box input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+.practice-box form { display: block; }
+.practice-box .actions { margin-top: 12px; flex-wrap: wrap; }
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #131f24;
+  --panel: #202f36;
+  --text: #eff6f8;
+  --muted: #b1c4ce;
+  --line: #3b535d;
+}
+[data-theme="dark"] body, [data-theme="dark"] header, [data-theme="dark"] .sidebar {
+  background: var(--ink);
+  color: var(--text);
+  border-color: var(--line);
+}
+[data-theme="dark"] :is(button:not(.primary):not(.node), input, select, .rail-card, .formula, #board,
+  .rubi-bubble, .journey-summary, .section-card, .unit-head, .coach-pill, .guided-step) {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--line);
+}
+[data-theme="dark"] .side-link.active { color: #bb9cf2; border-color: #9068bf; }
+[data-theme="dark"] a { color: #a1df65; }

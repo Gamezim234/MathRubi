@@ -19,7 +19,7 @@ phases.forEach((phase,i) => { phase.index = i; });
 let selectedSubject = 'calculo', selectedSection = null;
 try { const savedSubject = localStorage.getItem('mathrubi-subject:' + AUTH.user); if (SUBJECTS[savedSubject]) selectedSubject = savedSubject; } catch {}
 const subjectUnits = (subjectId = selectedSubject) => SUBJECTS[subjectId].sections.flatMap(section => section.refs.map(([id,u]) => sections.find(s => s.id === id).units[u]));
-const subjectPhases = () => subjectUnits().flatMap(unit => unit.phases);
+const subjectPhases = subjectId => subjectUnits(subjectId).flatMap(unit => unit.phases);
 const catalogUnits = section => section.refs.map(([id,u]) => sections.find(s => s.id === id).units[u]);
 const catalogPhases = section => catalogUnits(section).flatMap(unit => unit.phases);
 const mastery = createMasteryRules(SUBJECTS, section => section.refs.map(([id,u]) => sections.find(s => s.id === id).units[u]), id => state.phases[id]);
@@ -199,8 +199,8 @@ function node(name, icon, enabled, action, current, chest = false) {
 }
 
 // ---- Revisão espaçada: mistura itens simples de fases já dominadas, priorizando os mais errados.
-function reviewPool() {
-  return subjectPhases().filter(isDone).flatMap(phase => phase.items.filter(item => item.practice && !item.question[7]))
+function reviewPool(subjectId) {
+  return subjectPhases(subjectId).filter(isDone).flatMap(phase => phase.items.filter(item => item.practice && !item.question[7]))
     .sort((a, b) => (state.misses[b.id] || 0) - (state.misses[a.id] || 0) || a.id.localeCompare(b.id));
 }
 function startReview(pool) {
@@ -213,6 +213,7 @@ function start(i, focus) {
   begin(phases[i], i, focus);
 }
 function begin(phase, i, focus = true) {
+  closePracticePanels();
   $('sectionsScreen').hidden = true;
   setActiveNavigation('navLearn');
   document.body.classList.remove('journey-visible');
@@ -235,8 +236,10 @@ function markMiss(taskIndex, again) {
   const item = ph.items[taskIndex];
   if (!item.practice) return;
   missed.add(taskIndex);
-  state.misses[item.id] = (state.misses[item.id] || 0) + 1;
-  save();
+  if (!ph.generated) {
+    state.misses[item.id] = (state.misses[item.id] || 0) + 1;
+    save();
+  }
   if (again && !queue.slice(index + 1).includes(taskIndex)) queue.push(taskIndex);
 }
 function draw(focus) {
@@ -407,6 +410,7 @@ $('solution').onclick = () => {
   $('next').onclick = advance;
 };
 function showMap() {
+  closePracticePanels();
   $('sectionsScreen').hidden = true;
   setActiveNavigation('navLearn');
   document.body.classList.remove('journey-visible');
@@ -421,7 +425,7 @@ $('back').onclick = showMap;
 $('coachBadge').innerHTML = RUBI_SVG;
 drawTrack();
 
-$('sideReview').onclick = () => { const pool = reviewPool(); if (pool.length >= 4) startReview(pool); else { showMap(); $('review').scrollIntoView({behavior: 'smooth', block: 'center'}); } };
+$('sideReview').onclick = () => openPracticePanel(practicePanel, 'sideReview');
 
 $('navLearn').onclick = showMap;
 $('navAchievements').onclick = () => { showMap(); setActiveNavigation('navAchievements'); document.body.classList.add('journey-visible'); window.scrollTo({top:0, behavior:'smooth'}); };
@@ -440,6 +444,7 @@ function setActiveNavigation(id) {
   }
 }
 function showSections() {
+  closePracticePanels();
   document.body.classList.remove('journey-visible','lesson-active');
   drawTrack();
   $('map').hidden = $('play').hidden = true;
@@ -448,6 +453,158 @@ function showSections() {
   $('sectionsTitle').focus({preventScroll:true}); window.scrollTo({top:0});
 }
 $('navSections').onclick = showSections;
+
+const settingsButton = document.createElement('button');
+settingsButton.id = 'navSettings';
+settingsButton.className = 'side-link';
+settingsButton.innerHTML = '<span aria-hidden="true">⚙</span> Configurações';
+document.querySelector('.sidebar-footer').before(settingsButton);
+const practicePanel = document.createElement('section');
+const settingsPanel = document.createElement('section');
+for (const panel of [practicePanel, settingsPanel]) {
+  panel.hidden = true;
+  panel.className = 'practice-panel';
+  $('map').before(panel);
+}
+const themeLink = document.createElement('link');
+themeLink.rel = 'stylesheet';
+themeLink.href = 'practice.css?v=16';
+document.head.append(themeLink);
+const themeKey = 'mathrubi-theme:' + AUTH.user;
+let apiKey = '';
+let pendingPractice;
+settingsPanel.innerHTML = `
+  <h1 tabindex="-1">Configurações</h1>
+  <div class="practice-box"><h2>Conta</h2><p id="settingsAccount"></p><button id="settingsLogout">Sair da conta</button></div>
+  <div class="practice-box"><h2>Aparência</h2><label for="practiceTheme">Tema</label>
+    <select id="practiceTheme"><option value="light">Claro</option><option value="dark">Escuro</option></select></div>
+  <div class="practice-box"><h2>IA · NVIDIA</h2>
+    <p>Entre no catálogo da NVIDIA, abra o modelo Llama 3.3 70B Instruct e use “Get API Key”.
+    <a href="https://build.nvidia.com/meta/llama-3_3-70b-instruct" target="_blank" rel="noopener noreferrer">Abrir NVIDIA Build</a></p>
+    <form id="practiceKeyForm"><label for="practiceKey">Chave de API da NVIDIA</label>
+      <input id="practiceKey" type="password" placeholder="nvapi-…" autocomplete="off" required maxlength="206">
+      <div class="actions"><button class="primary">Usar nesta sessão</button><button type="button" id="practiceDisconnect">Desconectar</button></div>
+    </form>
+    <p id="practiceKeyStatus" role="status">A chave fica em memória até recarregar ou sair.</p>
+  </div>`;
+practicePanel.innerHTML = `
+  <h1 tabindex="-1">Praticar</h1>
+  <div class="practice-box"><h2>Exercícios com IA</h2>
+    <p>O Rubi usa apenas as fases que você já concluiu neste curso.</p>
+    <label for="practiceCourse">Curso</label><select id="practiceCourse"></select>
+    <p id="practiceScope"></p>
+    <div class="actions"><button id="practiceGenerate" class="primary">Gerar 4 exercícios</button><button id="practiceSettings">Configurar NVIDIA</button></div>
+    <p id="practiceStatus" role="status"></p>
+  </div>
+  <div class="practice-box"><h2>Revisão espaçada</h2><p>Reveja questões do curso selecionado, com prioridade para seus erros.</p>
+    <button id="practiceReview">Revisar questões</button></div>`;
+$('settingsAccount').textContent = '@' + AUTH.user;
+$('settingsLogout').onclick = () => document.querySelector('header > span:last-child button').click();
+try { $('practiceTheme').value = localStorage.getItem(themeKey) === 'dark' ? 'dark' : 'light'; } catch {}
+document.documentElement.dataset.theme = $('practiceTheme').value;
+$('practiceTheme').onchange = () => {
+  document.documentElement.dataset.theme = $('practiceTheme').value;
+  try { localStorage.setItem(themeKey, $('practiceTheme').value); } catch {}
+};
+$('practiceKeyForm').onsubmit = event => {
+  event.preventDefault();
+  const entered = $('practiceKey').value.trim();
+  $('practiceKey').value = '';
+  if (!/^nvapi-[\w-]{8,200}$/.test(entered)) {
+    $('practiceKeyStatus').textContent = 'Confira o formato da chave NVIDIA (nvapi-…).';
+    return;
+  }
+  apiKey = entered;
+  $('practiceKeyStatus').textContent = 'Chave configurada nesta sessão. A NVIDIA a verifica ao gerar exercícios.';
+};
+$('practiceDisconnect').onclick = () => {
+  apiKey = '';
+  $('practiceKey').value = '';
+  $('practiceKeyStatus').textContent = 'Chave removida.';
+};
+for (const [id, subject] of Object.entries(SUBJECTS)) $('practiceCourse').add(new Option(subject.title, id));
+$('practiceCourse').value = selectedSubject;
+settingsButton.onclick = () => openPracticePanel(settingsPanel, 'navSettings');
+$('practiceSettings').onclick = settingsButton.onclick;
+
+function closePracticePanels() {
+  pendingPractice?.abort();
+  pendingPractice = undefined;
+  practicePanel.hidden = settingsPanel.hidden = true;
+}
+
+function openPracticePanel(panel, id) {
+  closePracticePanels();
+  $('map').hidden = $('play').hidden = $('sectionsScreen').hidden = true;
+  document.body.classList.remove('journey-visible', 'lesson-active');
+  setActiveNavigation(id);
+  panel.hidden = false;
+  if (panel === practicePanel) {
+    $('practiceStatus').textContent = '';
+    updatePracticeScope();
+  }
+  panel.querySelector('h1').focus();
+}
+
+function studiedTopics(subjectId) {
+  return SUBJECTS[subjectId].sections.flatMap(section => catalogUnits(section).flatMap(unit =>
+    unit.phases.filter(isDone).map(phase => section.title + ' / ' + unit.title + ' / ' + phase.name)));
+}
+
+function updatePracticeScope() {
+  const course = $('practiceCourse').value;
+  const topics = studiedTopics(course);
+  $('practiceScope').textContent = topics.length
+    ? topics.length + ' fases concluídas. Mais recente na trilha: ' + topics.at(-1) + '.'
+    : 'Conclua pelo menos uma fase deste curso para gerar exercícios.';
+  $('practiceGenerate').disabled = !apiKey || !topics.length || Boolean(pendingPractice);
+  $('practiceSettings').hidden = Boolean(apiKey);
+  $('practiceReview').disabled = reviewPool(course).length < 4;
+}
+$('practiceCourse').onchange = () => {
+  pendingPractice?.abort();
+  pendingPractice = undefined;
+  $('practiceStatus').textContent = '';
+  updatePracticeScope();
+};
+$('practiceReview').onclick = () => startReview(reviewPool($('practiceCourse').value));
+$('practiceGenerate').onclick = async () => {
+  const course = $('practiceCourse').value;
+  const topics = studiedTopics(course);
+  if (!apiKey || !topics.length || pendingPractice) return;
+  const request = new AbortController();
+  pendingPractice = request;
+  updatePracticeScope();
+  $('practiceStatus').textContent = 'Gerando exercícios com a NVIDIA…';
+  try {
+    const response = await fetch('/api/practice', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey},
+      body: JSON.stringify({course: SUBJECTS[course].title, topics}),
+      signal: request.signal
+    });
+    if (response.status === 404 || !response.headers.get('content-type')?.includes('application/json')) {
+      throw new Error('Esta hospedagem precisa da rota de IA. Para testar localmente, execute node tools/serve.js.');
+    }
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    if (pendingPractice !== request) return;
+    const items = result.items.map((item, i) => ({
+      id: 'generated:' + i, practice: true,
+      question: ['Desafio de prática', 'Resolva e informe o resultado numérico.', item.prompt, String(item.answer), item.hint, item.explanation]
+    }));
+    begin({id: 'generated', name: 'Prática com IA', review: true, generated: true, items}, -1);
+  } catch (error) {
+    if (pendingPractice === request) $('practiceStatus').textContent = location.protocol === 'file:'
+      ? 'Abra o app pelo servidor local: node tools/serve.js.'
+      : error instanceof TypeError ? 'Não foi possível conectar ao servidor do MathRubi.' : error.message;
+  } finally {
+    if (pendingPractice === request) {
+      pendingPractice = undefined;
+      updatePracticeScope();
+    }
+  }
+};
 
 function startSectionCheckpoint(subjectId, section) {
   if (!mastery.canCheckpoint(subjectId,section)) return;

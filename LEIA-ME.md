@@ -79,3 +79,11 @@ Validadores: `node tools/validate.js`, `node tools/validate-mastery.js` (170 ver
 - **Recuperar:** em "Perdi o autenticador", digite o e-mail cadastrado e um código de recuperação. O código usado deixa de valer; em seguida liga-se um autenticador novo e são gerados 8 códigos novos (os antigos são invalidados).
 - **Limites:** o e-mail só identifica a conta e confirma a recuperação; nenhuma mensagem é enviada, porque o app não tem servidor. Contas, hashes dos códigos e sessão ficam no `localStorage` do navegador, então isto separa o progresso de cada pessoa, mas não é segurança de servidor. Contas criadas antes do e-mail e dos códigos existirem não têm recuperação.
 - `node tools/validate-qr.js` confere o gerador de QR com um decodificador independente.
+
+## Praticar com NVIDIA
+
+Abra o app com `node tools/serve.js` em http://localhost:5183. Em **Configurações**, cole a chave NVIDIA e escolha o tema. A chave fica só na memória da aba. O tema fica salvo por usuário no navegador.
+
+Em **Praticar**, escolha o curso. O app usa os nomes de seção, unidade e fase para limitar a geração às fases já concluídas. A NVIDIA recebe esses tópicos e o nome do curso, além da chave usada para autenticar a chamada. As questões geradas são extras e não alteram a progressão da trilha. A revisão espaçada continua disponível.
+
+A rota `POST /api/practice` é implementada em `tools/practice-api.js` e encaminha a chamada à NVIDIA com o modelo `meta/llama-3.3-70b-instruct`. A geração exige Node.js 20+ e um servidor que execute `tools/serve.js`. Para hospedar o servidor, defina `HOST=0.0.0.0`, configure `PORT` conforme a plataforma e exponha o app por HTTPS. O pacote estático atual da Discloud não inclui essa rota. Sem ela, a prática gerada não funciona.
